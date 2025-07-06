@@ -3,6 +3,7 @@ package core
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -283,6 +284,45 @@ func TestSymlinkErrorCases(t *testing.T) {
 	// Test removing non-existent symlink
 	if err := removeSymlink("nonexistent.txt"); err != nil {
 		t.Errorf("removeSymlink should succeed for non-existent file: %v", err)
+	}
+
+	// SECURITY TEST: Ensure removeSymlink refuses to remove regular files
+	regularFile := "important.txt"
+	if err := os.WriteFile(regularFile, []byte("critical data"), 0644); err != nil {
+		t.Fatalf("Failed to create regular file: %v", err)
+	}
+
+	// Try to remove regular file - should fail
+	err = removeSymlink(regularFile)
+	if err == nil {
+		t.Fatal("SECURITY: removeSymlink should refuse to remove regular files")
+	}
+	if !strings.Contains(err.Error(), "not a symlink") {
+		t.Errorf("Expected 'not a symlink' error, got: %v", err)
+	}
+
+	// Verify file still exists
+	if _, err := os.Stat(regularFile); os.IsNotExist(err) {
+		t.Fatal("SECURITY BREACH: Regular file was deleted!")
+	}
+
+	// Test with directory
+	if err := os.Mkdir("testdir", 0755); err != nil {
+		t.Fatalf("Failed to create directory: %v", err)
+	}
+
+	// Try to remove directory - should fail
+	err = removeSymlink("testdir")
+	if err == nil {
+		t.Fatal("SECURITY: removeSymlink should refuse to remove directories")
+	}
+	if !strings.Contains(err.Error(), "not a symlink") {
+		t.Errorf("Expected 'not a symlink' error for directory, got: %v", err)
+	}
+
+	// Verify directory still exists
+	if _, err := os.Stat("testdir"); os.IsNotExist(err) {
+		t.Fatal("SECURITY BREACH: Directory was deleted!")
 	}
 }
 

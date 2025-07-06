@@ -75,14 +75,24 @@ func createSymlink(source, target string) error {
 func removeSymlink(path string) error {
 	path = filepath.Clean(path)
 
-	// Check if file exists
-	if _, err := os.Lstat(path); os.IsNotExist(err) {
+	// Check if file exists and get info
+	info, err := os.Lstat(path)
+	if os.IsNotExist(err) {
 		return nil // File doesn't exist, nothing to remove
 	}
+	if err != nil {
+		return fmt.Errorf("failed to stat %s: %w", path, err)
+	}
 
-	// Remove the file/symlink
+	// SECURITY: Only remove if it's actually a symlink
+	// This prevents accidental deletion of regular files or directories
+	if info.Mode()&os.ModeSymlink == 0 {
+		return fmt.Errorf("refusing to remove %s: not a symlink", path)
+	}
+
+	// Safe to remove - it's confirmed to be a symlink
 	if err := os.Remove(path); err != nil {
-		return fmt.Errorf("failed to remove %s: %w", path, err)
+		return fmt.Errorf("failed to remove symlink %s: %w", path, err)
 	}
 
 	return nil
