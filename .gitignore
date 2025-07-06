@@ -11,6 +11,9 @@
 # Test binary, built with `go test -c`
 *.test
 
+# Main binary
+viberules
+
 # Code coverage profiles and other test artifacts
 *.out
 coverage.*
@@ -30,3 +33,15 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# viberules (local mode - entire directory ignored)
+.viberules/
+
+# viberules local files (personal files only)
+*.local.md
+
+# viberules output files (symlinked)
+.amazonq/
+CLAUDE.md
+GEMINI.md
+AGENTS.md
