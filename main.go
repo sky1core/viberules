@@ -373,6 +373,16 @@ func loadConfig() (*Config, error) {
 		}, nil
 	}
 
+	// Security: Limit config file size to prevent YAML bomb attacks
+	info, err := os.Stat(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to stat config file: %w", err)
+	}
+	const maxConfigSize = 1 * 1024 * 1024 // 1MB
+	if info.Size() > maxConfigSize {
+		return nil, fmt.Errorf("config file too large: %d bytes (max %d)", info.Size(), maxConfigSize)
+	}
+
 	content, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)

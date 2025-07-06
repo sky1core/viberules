@@ -391,8 +391,8 @@ func TestCompleteViberulesWorkflow(t *testing.T) {
 
 	// Test 10: File permission scenarios
 	t.Run("File Permissions", func(t *testing.T) {
-		// Test with read-only config.yaml
-		if err := os.Chmod(".viberules/config.yaml", 0444); err != nil {
+		// Test with read-only .config.yaml
+		if err := os.Chmod(".viberules/.config.yaml", 0444); err != nil {
 			t.Logf("Could not change file permissions: %v", err)
 			return
 		}
@@ -404,7 +404,7 @@ func TestCompleteViberulesWorkflow(t *testing.T) {
 		}
 
 		// Restore permissions
-		os.Chmod(".viberules/config.yaml", 0644)
+		os.Chmod(".viberules/.config.yaml", 0644)
 	})
 
 	// Test 11: Symlink validation
